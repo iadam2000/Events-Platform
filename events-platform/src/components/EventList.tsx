@@ -21,6 +21,9 @@ export default function EventList({ user }: { user: User }) {
         refreshEvents();
         const fetchData = async () => {
             setLoading(true);
+            setTimeout(() => {
+                console.log("Waited for 5 seconds");
+            }, 5000);
             // 1. Fetch staff status
             const { data: profile, error: profileError } = await supabase
                 .from("profiles")
