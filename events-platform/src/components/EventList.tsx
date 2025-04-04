@@ -15,10 +15,12 @@ export default function EventList({ user }: { user: User }) {
     const [isStaff, setIsStaff] = useState(false);
     const [events, setEvents] = useState<Event[]>([]);
     const [signedUpEvents, setSignedUpEvents] = useState<string[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         refreshEvents();
         const fetchData = async () => {
+            setLoading(true);
             // 1. Fetch staff status
             const { data: profile, error: profileError } = await supabase
                 .from("profiles")
@@ -29,7 +31,7 @@ export default function EventList({ user }: { user: User }) {
             if (profileError) {
                 console.error("Error fetching profile:", profileError.message);
             } else {
-                console.log("Profile loaded:", profile); 
+                console.log("Profile loaded:", profile);
                 setIsStaff(profile?.is_staff || false);
             }
             // 2. Fetch all events
@@ -55,6 +57,7 @@ export default function EventList({ user }: { user: User }) {
             } else {
                 setSignedUpEvents(signupsData.map((row) => row.event_id));
             }
+            setLoading(false);
         };
 
         fetchData();
@@ -115,32 +118,35 @@ export default function EventList({ user }: { user: User }) {
             <h2 className="text-xl font-bold mb-2">Upcoming Events</h2>
             {isStaff && <NewEventForm user={user} onEventCreated={refreshEvents} />}
             <p className="mb-2">{isStaff ? "You are staff ✅" : "Regular user"}</p>
-            <ul>
-                {events.map((event) => (
-                    <li key={event.id} className="mb-2">
-                        {event.name} — {new Date(event.datetime).toLocaleString()}
-                        {signedUpEvents.includes(event.id) ? (
-                            <>
-                                <span className="ml-4 text-green-600">✅ Signed up</span>
+            {loading ? (
+                <p className="text-gray-500 italic">Loading events...</p>
+            ) : (
+                <ul>
+                    {events.map((event) => (
+                        <li key={event.id} className="mb-2">
+                            {event.name} — {new Date(event.datetime).toLocaleString()}
+                            {signedUpEvents.includes(event.id) ? (
+                                <>
+                                    <span className="ml-4 text-green-600">✅ Signed up</span>
+                                    <button
+                                        className="ml-2 text-blue-600 underline text-sm"
+                                        onClick={() => handleAddToCalendar(event)}
+                                    >
+                                        Add to Calendar
+                                    </button>
+                                </>
+                            ) : (
                                 <button
-                                    className="ml-2 text-blue-600 underline text-sm"
-                                    onClick={() => handleAddToCalendar(event)}
+                                    onClick={() => handleSignup(event.id)}
+                                    className="ml-4 px-2 py-1 bg-blue-500 text-white rounded"
                                 >
-                                    Add to Calendar
+                                    Sign Up
                                 </button>
-                            </>
-                        ) : (
-                            <button
-                                onClick={() => handleSignup(event.id)}
-                                className="ml-4 px-2 py-1 bg-blue-500 text-white rounded"
-                            >
-                                Sign Up
-                            </button>
-                        )}
-
-                    </li>
-                ))}
-            </ul>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     );
 }
