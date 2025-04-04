@@ -51,4 +51,16 @@ git clone https://github.com/iadam2000/Events-Platform.git
 cd Events-Platform/events-platform
 ```
 
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Run the server
+```bash
+npm run dev
+```
+App will be available at http://localhost:5173
+
 
